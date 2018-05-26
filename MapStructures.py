@@ -1,6 +1,6 @@
 # Author: Jack Adams
 # Date Started: 18/05/17
-# Last Updated: 18/05/19
+# Last Updated: 18/05/26
 
 # This file contains the definitions of the map and point structures. It also
 # contains all of the methods which act on those structures.
@@ -100,26 +100,37 @@ class Map:
                                                                    sizes[2]]),
                                         axis=0)
 
-    def calculate_next_time_step(self, map_width):
+    def calculate_next_time_step(self, tstep, map_width):
         """
         This method is called to do most of the work. This method looks at the
         previous time step, looping through them. It calls various finite
         difference schemes depending on which point it is looking at. Lastly,
         it will using special functions to create specific boundary conditions
         along the outside of the map.
+
+        :param tstep: The time step for which these values will be calculated.
+        :param map_width: The width of the generated map.
         """
 
         w = map_width + 5
 
         for i in range (1, w-1):
             for j in range(1, w-1):
-                if ((i == -1 && j == -1) || (i == 1 && j == -1) || 
-                     (i == -1 && j == 1) || (i == 1 && j == 1)):
-                     self.Light
+                if ((i == 1 & j == 1) | (i == 1 & j == w-1) |
+                     (i == w-1 & j == 1) | (i == w-1 & j == w-1)):
+                     self.Light[tstep, i, j] = self.Light[tstep-1, i, j] + \
+                                                self.outer_corner_magic_stencil(
+                                                   self.Light, self.DifLight,
+                                                    tstep, i, j
+                                                ) + \
+                                                self.outer_corner_pres_stencil(
+                                                    self.LDPressure, tstep, i, j
+                                                )
 
     def calculate_roi_values(self, magic_field, dif_field, pres_field, tstep,
                              map_width):
         """
+
         This method is used to calculate the values of the given type of Magic
         across the region of interest, defined by the size of map_width, for
         the given time.
@@ -130,6 +141,15 @@ class Map:
         :param dif_field: The map array which is the Magical pressure.
         :param tstep: The value of the next time step in the Magic array.
         :param map_width: The number of points wide the region of interest is.
+
+
+        :param self:
+        :param magic_field:
+        :param dif_field:
+        :param pres_field:
+        :param tstep:
+        :param map_width:
+        :return:
         """
 
         for i in range(3, map_width + 2):
@@ -182,7 +202,6 @@ class Map:
                                             dif_field, tstep, w, i) +
                                         self.inner_buffer_pres_stencil(pres_field,
                                             tstep, w, i))
-
 
     def roi_magic_stencil(self, magic_field, dif_field, tstep, x, y):
         """
@@ -247,7 +266,7 @@ class Map:
 
         return magnitude
 
-    #def inner_buffer_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+    def inner_buffer_magic_stencil(self, magic_field, dif_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at any point along the inner buffer region.
@@ -275,7 +294,7 @@ class Map:
         return magnitude
 
 
-    #def inner_buffer_pres_stencil(self, pres_field, tstep, x, y):
+    def inner_buffer_pres_stencil(self, pres_field, tstep, x, y):
         """
         Calculates the magnitude of the force pushing all Magics away from a
         point due to the high 'pressure' or presence of lots of Magic at that
@@ -303,7 +322,7 @@ class Map:
 
         return magnitude
 
-    #def outer_horz_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+    def outer_horz_magic_stencil(self, magic_field, dif_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at points along the top or bottom of the outer
@@ -325,11 +344,11 @@ class Map:
                      8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
                      1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
                      2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
-                     2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1]):
+                     2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
         return magnitude
 
-    #def outer_horz_pres_stencil(self, pres_field, tstep, x, y):
+    def outer_horz_pres_stencil(self, pres_field, tstep, x, y):
         """
         Calculates the magnitude of the force pushing all Magics away from a
         point due to the high 'pressure' or presence of lots of Magic at that
@@ -355,7 +374,7 @@ class Map:
 
         return magnitude
 
-    #def outer_vert_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+    def outer_vert_magic_stencil(self, magic_field, dif_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at points along the left or right of the outer
@@ -382,7 +401,7 @@ class Map:
         return magnitude
 
 
-    #def outer_vert_pres_stencil(self, pres_field, tstep, x, y):
+    def outer_vert_pres_stencil(self, pres_field, tstep, x, y):
         """
         Calculates the magnitude of the force pushing all Magics away from a
         point due to the high 'pressure' or presence of lots of Magic at that
@@ -409,7 +428,7 @@ class Map:
         return magnitude
 
 
-    #def outer_corner_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+    def outer_corner_magic_stencil(self, magic_field, dif_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at any points in the corners of the outer buffer
@@ -434,7 +453,7 @@ class Map:
         return magnitude
 
 
-    #def outer_corner_pres_stencil(selfpres_field, tstep, x, y):
+    def outer_corner_pres_stencil(self, pres_field, tstep, x, y):
         """
         Calculates the magnitude of the force pushing all Magics away from a
         point due to the high 'pressure' or presence of lots of Magic at that
