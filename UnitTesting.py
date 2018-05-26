@@ -81,12 +81,29 @@ class TestFiniteDifferenceSchemes(test.TestCase):
         magic_field[time_step - 1, 4, 4] = 150
         value = test_map.roi_magic_stencil(magic_field, dif_field, time_step,
                                            x, y)
-        self.assertEqual(value, 115)
+        self.assertEqual(np.round(value, 1), 30.0)
 
         x = 4
         value = test_map.roi_magic_stencil(magic_field, dif_field, time_step,
                                            x, y)
-        self.assertEqual(value, 95.555)
+        self.assertEqual(np.round(value, 1), -108.9)
+
+    def test_roi_pres_stencil(self):
+        test_map = MS.Map()
+        pres_field = 100 * np.ones([1, 9, 9])
+        pres_field = np.append(pres_field, np.zeros([1, 9, 9]), axis=0)
+        time_step = 1
+        y = 4
+        x = 3
+        pres_field[time_step - 1, 4, 4] = 150
+        value = test_map.roi_pres_stencil(pres_field, time_step,
+                                              x, y)
+        self.assertEqual(np.round(value, 1), 30.0)
+
+        x = 4
+        value = test_map.roi_pres_stencil(pres_field, time_step,
+                                              x, y)
+        self.assertEqual(np.round(value, 1), -108.9)
 
 if __name__ == '__main__':
     test.main()
