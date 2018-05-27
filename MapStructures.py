@@ -100,7 +100,8 @@ class Map:
                                                                    sizes[2]]),
                                         axis=0)
 
-    def calculate_next_time_step(self, tstep, map_width):
+    def calculate_next_time_step(self, magic_field, dif_field, pres_field,
+                                 tstep, map_width):
         """
         This method is called to do most of the work. This method looks at the
         previous time step, looping through them. It calls various finite
@@ -118,92 +119,22 @@ class Map:
             for j in range(1, w-1):
                 if ((i == 1 & j == 1) | (i == 1 & j == w-1) |
                      (i == w-1 & j == 1) | (i == w-1 & j == w-1)):
-                     self.Light[tstep, i, j] = self.Light[tstep-1, i, j] + \
-                                                self.outer_corner_magic_stencil(
-                                                   self.Light, self.DifLight,
-                                                    tstep, i, j
-                                                ) + \
-                                                self.outer_corner_pres_stencil(
-                                                    self.LDPressure, tstep, i, j
-                                                )
+                    self.outer_corner_stencil(magic_field, dif_field,
+                                              pres_field, tstep, i, j)
+                elif (i == 1 | i == w-1):
+                    self.outer_horz_stencil(magic_field, dif_field,
+                                            pres_field, tstep, i, j)
+                elif (j == 1 | j == w-1):
+                    self.outer_vert_stencil(magic_field, dif_field,
+                                            pres_field, tstep, i, j)
+                elif (i == 2 | j == 2):
+                    self.inner_buffer_stencil(magic_field, dif_field,
+                                              pres_field, tstep, i, j)
+                else:
+                    self.roi_stencil(magic_field, dif_field, pres_field,
+                                     tstep, i, j)
 
-    def calculate_roi_values(self, magic_field, dif_field, pres_field, tstep,
-                             map_width):
-        """
-
-        This method is used to calculate the values of the given type of Magic
-        across the region of interest, defined by the size of map_width, for
-        the given time.
-
-        :param magic_field: One of the arrays of Magic which is stored in the
-                            map.
-        :param dif_field: The diffusion field associated with that Magic field.
-        :param dif_field: The map array which is the Magical pressure.
-        :param tstep: The value of the next time step in the Magic array.
-        :param map_width: The number of points wide the region of interest is.
-
-
-        :param self:
-        :param magic_field:
-        :param dif_field:
-        :param pres_field:
-        :param tstep:
-        :param map_width:
-        :return:
-        """
-
-        for i in range(3, map_width + 2):
-            for j in range(3, map_width + 2):
-                magic_field[tstep, i, j] = (magic_field[tstep - 1 , i, j]
-                                            + self.roi_magic_stencil(magic_field,
-                                                                dif_field,
-                                                                tstep, i, j)
-                                            + self.roi_pressure_stencil(pres_field,
-                                                                   tstep, i, j))
-
-    def calculate_inner_buffer_values(self, magic_field, dif_field, pres_field,
-                                      tstep, map_width):
-        """
-        This method is used to find the values of the given type of Magic
-        in the inner buffer region, the one-point-thick layer around the
-        region of interest.
-
-        :param magic_field: One of the arrays of Magic which is stored in the
-                            map.
-        :param dif_field: The diffusion field associated with that Magic field.
-        :param dif_field: The map array which is the Magical pressure.
-        :param tstep: The value of the next time step in the Magic array.
-        :param map_width: The number of points wide the region of interest is.
-        """
-
-        w = map_width + 3
-
-        for i in range(2, w):
-            magic_field[tstep, i, 2] = (magic_field[tstep - 1, i, 2] +
-                                        self.inner_buffer_magic_stencil(magic_field,
-                                            dif_field, tstep, i, 2) +
-                                        self.inner_buffer_pres_stencil(pres_field,
-                                            tstep, i, 2))
-
-            magic_field[tstep, 2, i] = (magic_field[tstep - 1, 2, i] +
-                                        self.inner_buffer_magic_stencil(magic_field,
-                                            dif_field, tstep, 2, i) +
-                                        self.inner_buffer_pres_stencil(pres_field,
-                                            tstep, 2, i))
-
-            magic_field[tstep, i, w] = (magic_field[tstep - 1, i, w] +
-                                        self.inner_buffer_magic_stencil(magic_field,
-                                            dif_field, tstep, i, w) +
-                                        self.inner_buffer_pres_stencil(pres_field,
-                                            tstep, i, w))
-
-            magic_field[tstep, w, i] = (magic_field[tstep - 1, w, i] +
-                                        self.inner_buffer_magic_stencil(magic_field,
-                                            dif_field, tstep, w, i) +
-                                        self.inner_buffer_pres_stencil(pres_field,
-                                            tstep, w, i))
-
-    def roi_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+    def roi_stencil(self, magic_field, dif_field, pres_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points.
@@ -211,6 +142,8 @@ class Map:
         :param magic_field: One of the arrays of Magic which is stored in the
                             map.
         :param dif_field: The diffusion field associated with that Magic field.
+        :param pres_field: The array which corresponds to the sum of Magics
+                           at a point.
         :param tstep: The value of the next time step in the Magic array.
         :param x: The x-position of the point of interest.
         :param y: The y-position of the point of interest.
@@ -218,55 +151,41 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        magnitude = (1/45 * dif_field[x-3, y] * magic_field[tstep-1, x-3, y] -
-                     3/10 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
-                     3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
-                     3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
-                     3/10 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] +
-                     1/45 * dif_field[x+3, y] * magic_field[tstep-1, x+3, y] +
-                     1/45 * dif_field[x, y-3] * magic_field[tstep-1, x, y-3] -
-                     3/10 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
-                     3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
-                     3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
-                     3/10 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2] +
-                     1/45 * dif_field[x, y+3] * magic_field[tstep-1, x, y+3] -
-                     98/9 * dif_field[x, y] * magic_field[tstep-1, x, y])
-
-        return magnitude
-
-    def roi_pres_stencil(self, pres_field, tstep, x, y):
-        """
-        Calculates the magnitude of the force pushing all Magics away from a
-        point due to the high 'pressure' or presence of lots of Magic at that
-        point.
-
-        :param pres_field: The array which corresponds to the sum of Magics
-                           at a point.
-        :param tstep: The value of the next time step in the Magic array.
-        :param x: The x-position of the point of interest.
-        :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to the total pressure of Magic.
-        """
-
         beta = 1
-        magnitude = (1 / 45 * pres_field[tstep-1, x - 3, y] -
-                     3 / 10 * pres_field[tstep-1, x - 2, y] +
-                     3 * pres_field[tstep-1, x - 1, y] +
-                     3 * pres_field[tstep-1, x + 1, y] -
-                     3 / 10 * pres_field[tstep-1, x + 2, y] +
-                     1 / 45 * pres_field[tstep-1, x + 3, y] +
-                     1 / 45 * pres_field[tstep-1, x, y - 3] -
-                     3 / 10 * pres_field[tstep-1, x, y - 2] +
-                     3 * pres_field[tstep-1, x, y - 1] +
-                     3 * pres_field[tstep-1, x, y + 1] -
-                     3 / 10 * pres_field[tstep-1, x, y + 2] +
-                     1 / 45 * pres_field[tstep-1, x, y + 3] -
-                     98 / 9 * pres_field[tstep-1, x, y]) * beta
 
-        return magnitude
+        magic = (1/45 * dif_field[x-3, y] * magic_field[tstep-1, x-3, y] -
+                 3/10 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
+                 3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
+                 3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
+                 3/10 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] +
+                 1/45 * dif_field[x+3, y] * magic_field[tstep-1, x+3, y] +
+                 1/45 * dif_field[x, y-3] * magic_field[tstep-1, x, y-3] -
+                 3/10 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
+                 3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
+                 3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
+                 3/10 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2] +
+                 1/45 * dif_field[x, y+3] * magic_field[tstep-1, x, y+3] -
+                 98/9 * dif_field[x, y] * magic_field[tstep-1, x, y])
 
-    def inner_buffer_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+        pressure = (1 / 45 * pres_field[tstep - 1, x - 3, y] -
+                    3 / 10 * pres_field[tstep - 1, x - 2, y] +
+                    3 * pres_field[tstep - 1, x - 1, y] +
+                    3 * pres_field[tstep - 1, x + 1, y] -
+                    3 / 10 * pres_field[tstep - 1, x + 2, y] +
+                    1 / 45 * pres_field[tstep - 1, x + 3, y] +
+                    1 / 45 * pres_field[tstep - 1, x, y - 3] -
+                    3 / 10 * pres_field[tstep - 1, x, y - 2] +
+                    3 * pres_field[tstep - 1, x, y - 1] +
+                    3 * pres_field[tstep - 1, x, y + 1] -
+                    3 / 10 * pres_field[tstep - 1, x, y + 2] +
+                    1 / 45 * pres_field[tstep - 1, x, y + 3] -
+                    98 / 9 * pres_field[tstep - 1, x, y])
+
+        magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
+            + pressure * beta
+
+    def inner_buffer_stencil(self, magic_field, dif_field, pres_field, tstep,
+                             x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at any point along the inner buffer region.
@@ -274,6 +193,8 @@ class Map:
         :param magic_field: One of the arrays of Magic which is stored in the
                             map.
         :param dif_field: The diffusion field associated with that Magic field.
+        :param pres_field: The array which corresponds to the sum of Magics
+                           at a point.
         :param tstep: The value of the next time step in the Magic array.
         :param x: The x-position of the point of interest.
         :param y: The y-position of the point of interest.
@@ -281,48 +202,33 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        magnitude = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
-                     8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
-                     10 * dif_field[x, y] * magic_field[tstep-1, x, y] +
-                     8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
-                     1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
-                     1/6 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
-                     8/3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
-                     8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
-                     1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
-
-        return magnitude
-
-
-    def inner_buffer_pres_stencil(self, pres_field, tstep, x, y):
-        """
-        Calculates the magnitude of the force pushing all Magics away from a
-        point due to the high 'pressure' or presence of lots of Magic at that
-        point for points in the inner buffer region.
-
-        :param pres_field: The array which corresponds to the sum of Magics
-                           at a point.
-        :param tstep: The value of the next time step in the Magic array.
-        :param x: The x-position of the point of interest.
-        :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to the total pressure of Magic.
-        """
-
         beta = 1
-        magnitude = (-1/6 * pres_field[tstep-1, x-2, y] +
-                     8/3 * pres_field[tstep-1, x-1, y] -
-                     10 * pres_field[tstep-1, x, y] +
-                     8/3 * pres_field[tstep-1, x+1, y] -
-                     1/6 * pres_field[tstep-1, x+2, y] -
-                     1/6 * pres_field[tstep-1, x, y-2] +
-                     8/3 * pres_field[tstep-1, x, y-1] +
-                     8/3 * pres_field[tstep-1, x, y+1] -
-                     1/6 * pres_field[tstep-1, x, y+2]) * beta
 
-        return magnitude
+        magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
+                 8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
+                 10 * dif_field[x, y] * magic_field[tstep-1, x, y] +
+                 8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
+                 1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
+                 1/6 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
+                 8/3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
+                 8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
+                 1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-    def outer_horz_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+        pressure = (-1 / 6 * pres_field[tstep - 1, x - 2, y] +
+                    8 / 3 * pres_field[tstep - 1, x - 1, y] -
+                    10 * pres_field[tstep - 1, x, y] +
+                    8 / 3 * pres_field[tstep - 1, x + 1, y] -
+                    1 / 6 * pres_field[tstep - 1, x + 2, y] -
+                    1 / 6 * pres_field[tstep - 1, x, y - 2] +
+                    8 / 3 * pres_field[tstep - 1, x, y - 1] +
+                    8 / 3 * pres_field[tstep - 1, x, y + 1] -
+                    1 / 6 * pres_field[tstep - 1, x, y + 2])
+
+        magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
+            + pressure * beta
+
+    def outer_horz_stencil(self, magic_field, dif_field, pres_field, tstep, x,
+                           y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at points along the top or bottom of the outer
@@ -331,6 +237,8 @@ class Map:
         :param magic_field: One of the arrays of Magic which is stored in the
                             map.
         :param dif_field: The diffusion field associated with that Magic field.
+        :param pres_field: The array which corresponds to the sum of Magics
+                           at a point.
         :param tstep: The value of the next time step in the Magic array.
         :param x: The x-position of the point of interest.
         :param y: The y-position of the point of interest.
@@ -338,43 +246,29 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        magnitude = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
-                     8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
-                     9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
-                     8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
-                     1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
-                     2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
-                     2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
-
-        return magnitude
-
-    def outer_horz_pres_stencil(self, pres_field, tstep, x, y):
-        """
-        Calculates the magnitude of the force pushing all Magics away from a
-        point due to the high 'pressure' or presence of lots of Magic at that
-        point for points along the top or bottom of the outer buffer region.
-
-        :param pres_field: The array which corresponds to the sum of Magics
-                           at a point.
-        :param tstep: The value of the next time step in the Magic array.
-        :param x: The x-position of the point of interest.
-        :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to the total pressure of Magic.
-        """
-
         beta = 1
-        magnitude = (-1/6 * pres_field[tstep-1, x-2, y] +
-                     8/3 * pres_field[tstep-1, x-1, y] -
-                     9 * pres_field[tstep-1, x, y] +
-                     8/3 * pres_field[tstep-1, x+1, y] -
-                     1/6 * pres_field[tstep-1, x+2, y] +
-                     2 * pres_field[tstep-1, x, y-1] +
-                     2 * pres_field[tstep-1, x, y+1]) * beta
 
-        return magnitude
+        magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
+                 8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
+                 9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
+                 8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
+                 1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
+                 2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
+                 2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
-    def outer_vert_magic_stencil(self, magic_field, dif_field, tstep, x, y):
+        pressure = (-1/6 * pres_field[tstep-1, x-2, y] +
+                    8/3 * pres_field[tstep-1, x-1, y] -
+                    9 * pres_field[tstep-1, x, y] +
+                    8/3 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x+2, y] +
+                    2 * pres_field[tstep-1, x, y-1] +
+                    2 * pres_field[tstep-1, x, y+1])
+
+        magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
+            + pressure * beta
+
+    def outer_vert_stencil(self, magic_field, dif_field, pres_field, tstep, x,
+                           y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
         surrounding points at points along the left or right of the outer
@@ -383,6 +277,8 @@ class Map:
         :param magic_field: One of the arrays of Magic which is stored in the
                             map.
         :param dif_field: The diffusion field associated with that Magic field.
+        :param pres_field: The array which corresponds to the sum of Magics
+                           at a point.
         :param tstep: The value of the next time step in the Magic array.
         :param x: The x-position of the point of interest.
         :param y: The y-position of the point of interest.
@@ -390,7 +286,9 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        magnitude = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
+        beta = 1
+
+        magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
                      9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
                      2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
                      1/6 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
@@ -398,85 +296,49 @@ class Map:
                      8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
                      1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-        return magnitude
+        pressure = (2 * pres_field[tstep-1, x-1, y] -
+                    9 * pres_field[tstep-1, x, y] +
+                    2 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x, y-2] +
+                    8/3 * pres_field[tstep-1, x, y-1] +
+                    8/3 * pres_field[tstep-1, x, y+1] -
+                    1/6 * pres_field[tstep-1, x, y+2])
 
+        magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
+            + pressure * beta
 
-    def outer_vert_pres_stencil(self, pres_field, tstep, x, y):
+    def outer_corner_stencil(self, magic_field, dif_field, pres_field, tstep,
+                             x, y):
         """
-        Calculates the magnitude of the force pushing all Magics away from a
-        point due to the high 'pressure' or presence of lots of Magic at that
-        point for points along the left or right of the outer buffer region.
-
-        :param pres_field: The array which corresponds to the sum of Magics
-                           at a point.
-        :param tstep: The value of the next time step in the Magic array.
-        :param x: The x-position of the point of interest.
-        :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to the total pressure of Magic.
-        """
-
-        beta = 1
-        magnitude = (2 * pres_field[tstep-1, x-1, y] -
-                     9 * pres_field[tstep-1, x, y] +
-                     2 * pres_field[tstep-1, x+1, y] -
-                     1/6 * pres_field[tstep-1, x, y-2] +
-                     8/3 * pres_field[tstep-1, x, y-1] +
-                     8/3 * pres_field[tstep-1, x, y+1] -
-                     1/6 * pres_field[tstep-1, x, y+2]) * beta
-
-        return magnitude
-
-
-    def outer_corner_magic_stencil(self, magic_field, dif_field, tstep, x, y):
-        """
-        Calculates the change in Magic due to diffusion of Magic into or from
-        surrounding points at any points in the corners of the outer buffer
-        region.
+        Calculates the change in Magic due to diffusion and pressure of Magic
+        into or from surrounding points at any points in the corners of the
+        outer buffer region.
 
         :param magic_field: One of the arrays of Magic which is stored in the
                             map.
         :param dif_field: The diffusion field associated with that Magic field.
-        :param tstep: The value of the next time step in the Magic array.
-        :param x: The x-position of the point of interest.
-        :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to diffusion of this type of Magic.
-        """
-
-        magnitude = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
-                     2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] -
-                     8 * dif_field[x, y] * magic_field[tstep-1, x, y] +
-                     2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] +
-                     2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
-
-        return magnitude
-
-
-    def outer_corner_pres_stencil(self, pres_field, tstep, x, y):
-        """
-        Calculates the magnitude of the force pushing all Magics away from a
-        point due to the high 'pressure' or presence of lots of Magic at that
-        point for points in the corners of the outer buffer region.
-
         :param pres_field: The array which corresponds to the sum of Magics
                            at a point.
         :param tstep: The value of the next time step in the Magic array.
         :param x: The x-position of the point of interest.
         :param y: The y-position of the point of interest.
-        :return: A value for the change in Magic in the next time step at the
-                 point of interest due to the total pressure of Magic.
         """
 
         beta = 1
-        magnitude = (2 * pres_field[tstep-1, x-1, y] +
-                     2 * pres_field[tstep-1, x, y-1] -
-                     2 * pres_field[tstep-1, x, y] +
-                     2 * pres_field[tstep-1, x+1, y] +
-                     2 * pres_field[tstep-1, x, y+1]
-                     ) * beta
 
-        return magnitude
+        magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
+                 2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] -
+                 8 * dif_field[x, y] * magic_field[tstep-1, x, y] +
+                 2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] +
+                 2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
+        pressure = (2 * pres_field[tstep-1, x-1, y] +
+                    2 * pres_field[tstep-1, x, y-1] -
+                    8 * pres_field[tstep-1, x, y] +
+                    2 * pres_field[tstep-1, x+1, y] +
+                    2 * pres_field[tstep-1, x, y+1])
+
+        magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
+            + pressure * beta
 
     #def initialise_BCs(self):
