@@ -1,6 +1,6 @@
 # Author: Jack Adams
 # Date Started: 18/05/17
-# Last Updated: 18/05/26
+# Last Updated: 18/05/27
 
 # This file contains the definitions of the map and point structures. It also
 # contains all of the methods which act on those structures.
@@ -113,21 +113,21 @@ class Map:
         :param map_width: The width of the generated map.
         """
 
-        w = map_width + 5
+        w = map_width + 4
 
-        for i in range (1, w-1):
+        for i in range(1, w-1):
             for j in range(1, w-1):
                 if ((i == 1 & j == 1) | (i == 1 & j == w-1) |
                      (i == w-1 & j == 1) | (i == w-1 & j == w-1)):
                     self.outer_corner_stencil(magic_field, dif_field,
                                               pres_field, tstep, i, j)
-                elif (i == 1 | i == w-1):
-                    self.outer_horz_stencil(magic_field, dif_field,
-                                            pres_field, tstep, i, j)
-                elif (j == 1 | j == w-1):
+                elif i == 1 | i == w-1:
                     self.outer_vert_stencil(magic_field, dif_field,
                                             pres_field, tstep, i, j)
-                elif (i == 2 | j == 2):
+                elif j == 1 | j == w-1:
+                    self.outer_horz_stencil(magic_field, dif_field,
+                                            pres_field, tstep, i, j)
+                elif i == 2 | j == 2 | i == w-2 | j == w-2:
                     self.inner_buffer_stencil(magic_field, dif_field,
                                               pres_field, tstep, i, j)
                 else:
