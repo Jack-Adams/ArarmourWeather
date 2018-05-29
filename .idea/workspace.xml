@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="959dcb66-1fda-4900-8836-c1825a6203d2" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/weatherScript.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MapStructures.py" beforeDir="false" afterPath="$PROJECT_DIR$/MapStructures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UnitTesting.py" beforeDir="false" afterPath="$PROJECT_DIR$/UnitTesting.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -18,8 +17,8 @@
       <file leaf-file-name="MapStructures.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/MapStructures.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="125" column="64" selection-start-line="125" selection-start-column="64" selection-end-line="125" selection-end-column="64" />
+            <state relative-caret-position="299">
+              <caret line="335" selection-start-line="335" selection-end-line="335" />
               <folding>
                 <element signature="e#212#230#0" expanded="true" />
               </folding>
@@ -27,19 +26,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="weatherScript.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/weatherScript.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="37" lean-forward="true" selection-start-line="10" selection-start-column="37" selection-end-line="10" selection-end-column="37" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="UnitTesting.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="UnitTesting.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/UnitTesting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="337">
+              <caret line="113" column="63" lean-forward="true" selection-start-line="113" selection-start-column="63" selection-end-line="113" selection-end-column="63" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -62,8 +53,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/MapStructures.py" />
         <option value="$PROJECT_DIR$/weatherScript.py" />
+        <option value="$PROJECT_DIR$/MapStructures.py" />
+        <option value="$PROJECT_DIR$/UnitTesting.py" />
       </list>
     </option>
   </component>
@@ -107,7 +99,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python tests.py.test in UnitTesting.py">
     <configuration name="weatherScript" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="ArarmourWeather" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -126,8 +118,27 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
+    <configuration name="py.test in UnitTesting.py" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="ArarmourWeather" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/UnitTesting.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.weatherScript" />
+      <item itemvalue="Python tests.py.test in UnitTesting.py" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.py.test in UnitTesting.py" />
         <item itemvalue="Python.weatherScript" />
       </list>
     </recent_temporary>
@@ -145,19 +156,39 @@
     </task>
     <servers />
   </component>
+  <component name="TestHistory">
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 24m 00s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 24m 12s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 26m 17s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 31m 35s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 33m 04s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+    <history-entry file="py_test_in_UnitTesting_py - 2018.05.29 at 16h 46m 02s.xml">
+      <configuration name="py.test in UnitTesting.py" configurationId="tests" />
+    </history-entry>
+  </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32965517" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32965517" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32965517" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="8" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -174,14 +205,19 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/weatherScript.py</url>
-          <line>8</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/MapStructures.py</url>
           <line>133</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/UnitTesting.py</url>
+          <line>83</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/UnitTesting.py</url>
+          <line>131</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -191,14 +227,14 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="3" />
+      <option name="time" value="7" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/MapStructures.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1938">
-          <caret line="114" column="25" lean-forward="true" selection-start-line="114" selection-start-column="25" selection-end-line="114" selection-end-column="25" />
+        <state relative-caret-position="2125">
+          <caret line="125" column="64" selection-start-line="125" selection-start-column="64" selection-end-line="125" selection-end-column="64" />
           <folding>
             <element signature="e#212#230#0" expanded="true" />
           </folding>
@@ -214,10 +250,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/weatherScript.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="37" lean-forward="true" selection-start-line="10" selection-start-column="37" selection-end-line="10" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/MapStructures.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="125" column="64" selection-start-line="125" selection-start-column="64" selection-end-line="125" selection-end-column="64" />
+        <state relative-caret-position="1938">
+          <caret line="114" column="25" lean-forward="true" selection-start-line="114" selection-start-column="25" selection-end-line="114" selection-end-column="25" />
           <folding>
             <element signature="e#212#230#0" expanded="true" />
           </folding>
@@ -226,8 +269,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/weatherScript.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="37" lean-forward="true" selection-start-line="10" selection-start-column="37" selection-end-line="10" selection-end-column="37" />
+        <state relative-caret-position="136">
+          <caret line="8" selection-start-line="8" selection-end-line="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/MapStructures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="335" selection-start-line="335" selection-end-line="335" />
+          <folding>
+            <element signature="e#212#230#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/unittest/case.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="605" selection-start-line="605" selection-end-line="605" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/UnitTesting.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="337">
+          <caret line="113" column="63" lean-forward="true" selection-start-line="113" selection-start-column="63" selection-end-line="113" selection-end-column="63" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

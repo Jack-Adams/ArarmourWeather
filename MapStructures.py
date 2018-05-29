@@ -155,7 +155,8 @@ class Map:
 
         magic = (1/45 * dif_field[x-3, y] * magic_field[tstep-1, x-3, y] -
                  3/10 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
-                 3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
+                 3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
+                 98/9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
                  3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
                  3/10 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] +
                  1/45 * dif_field[x+3, y] * magic_field[tstep-1, x+3, y] +
@@ -164,22 +165,20 @@ class Map:
                  3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
                  3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
                  3/10 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2] +
-                 1/45 * dif_field[x, y+3] * magic_field[tstep-1, x, y+3] -
-                 98/9 * dif_field[x, y] * magic_field[tstep-1, x, y])
+                 1/45 * dif_field[x, y+3] * magic_field[tstep-1, x, y+3])
 
-        pressure = (1 / 45 * pres_field[tstep - 1, x - 3, y] -
-                    3 / 10 * pres_field[tstep - 1, x - 2, y] +
-                    3 * pres_field[tstep - 1, x - 1, y] +
-                    3 * pres_field[tstep - 1, x + 1, y] -
-                    3 / 10 * pres_field[tstep - 1, x + 2, y] +
-                    1 / 45 * pres_field[tstep - 1, x + 3, y] +
-                    1 / 45 * pres_field[tstep - 1, x, y - 3] -
-                    3 / 10 * pres_field[tstep - 1, x, y - 2] +
-                    3 * pres_field[tstep - 1, x, y - 1] +
-                    3 * pres_field[tstep - 1, x, y + 1] -
-                    3 / 10 * pres_field[tstep - 1, x, y + 2] +
-                    1 / 45 * pres_field[tstep - 1, x, y + 3] -
-                    98 / 9 * pres_field[tstep - 1, x, y])
+        pressure = (-1/30 * pres_field[tstep-1, x-3, y] +
+                    3/10 * pres_field[tstep-1, x-2, y] -
+                    3/2 * pres_field[tstep-1, x-1, y] +
+                    3/2 * pres_field[tstep-1, x+1, y] -
+                    3/10 * pres_field[tstep-1, x+2, y] +
+                    1/30 * pres_field[tstep-1, x+3, y] -
+                    1/30 * pres_field[tstep-1, x, y-3] +
+                    3/10 * pres_field[tstep-1, x, y-2] -
+                    3/2 * pres_field[tstep-1, x, y-1] +
+                    3/2 * pres_field[tstep-1, x, y+1] -
+                    3/10 * pres_field[tstep-1, x, y+2] +
+                    1/30 * pres_field[tstep-1, x, y+3])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
@@ -214,15 +213,14 @@ class Map:
                  8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
                  1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-        pressure = (-1 / 6 * pres_field[tstep - 1, x - 2, y] +
-                    8 / 3 * pres_field[tstep - 1, x - 1, y] -
-                    10 * pres_field[tstep - 1, x, y] +
-                    8 / 3 * pres_field[tstep - 1, x + 1, y] -
-                    1 / 6 * pres_field[tstep - 1, x + 2, y] -
-                    1 / 6 * pres_field[tstep - 1, x, y - 2] +
-                    8 / 3 * pres_field[tstep - 1, x, y - 1] +
-                    8 / 3 * pres_field[tstep - 1, x, y + 1] -
-                    1 / 6 * pres_field[tstep - 1, x, y + 2])
+        pressure = (1/6 * pres_field[tstep-1, x-2, y] -
+                    4/3 * pres_field[tstep-1, x-1, y] +
+                    4/3 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x+2, y] +
+                    1/6 * pres_field[tstep-1, x, y-2] -
+                    4/3 * pres_field[tstep-1, x, y-1] +
+                    4/3 * pres_field[tstep-1, x, y+1] -
+                    1/6 * pres_field[tstep-1, x, y+2])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
@@ -246,23 +244,22 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 1
+        beta = 0.1
 
         magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
                  8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
                  9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
                  8/3 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
-                 1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] -
+                 1/6 * dif_field[x+2, y] * magic_field[tstep-1, x+2, y] +
                  2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
                  2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
-        pressure = (-1/6 * pres_field[tstep-1, x-2, y] +
-                    8/3 * pres_field[tstep-1, x-1, y] -
-                    9 * pres_field[tstep-1, x, y] +
-                    8/3 * pres_field[tstep-1, x+1, y] -
-                    1/6 * pres_field[tstep-1, x+2, y] +
-                    2 * pres_field[tstep-1, x, y-1] +
-                    2 * pres_field[tstep-1, x, y+1])
+        pressure = (1/6 * pres_field[tstep-1, x-2, y] -
+                    4/3 * pres_field[tstep-1, x-1, y] +
+                    4/3 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x+2, y] -
+                    pres_field[tstep-1, x, y-1] +
+                    pres_field[tstep-1, x, y+1])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
@@ -286,22 +283,21 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 1
+        beta = 0.1
 
         magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
-                     9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
-                     2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
-                     1/6 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
-                     8/3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
-                     8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
-                     1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
+                 9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
+                 2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] -
+                 1/6 * dif_field[x, y-2] * magic_field[tstep-1, x, y-2] +
+                 8/3 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
+                 8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
+                 1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-        pressure = (2 * pres_field[tstep-1, x-1, y] -
-                    9 * pres_field[tstep-1, x, y] +
-                    2 * pres_field[tstep-1, x+1, y] -
-                    1/6 * pres_field[tstep-1, x, y-2] +
-                    8/3 * pres_field[tstep-1, x, y-1] +
-                    8/3 * pres_field[tstep-1, x, y+1] -
+        pressure = (-pres_field[tstep-1, x-1, y] +
+                    pres_field[tstep-1, x+1, y] +
+                    1/6 * pres_field[tstep-1, x, y-2] -
+                    4/3 * pres_field[tstep-1, x, y-1] +
+                    4/3 * pres_field[tstep-1, x, y+1] -
                     1/6 * pres_field[tstep-1, x, y+2])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
@@ -324,7 +320,7 @@ class Map:
         :param y: The y-position of the point of interest.
         """
 
-        beta = 1
+        beta = 0.1
 
         magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
                  2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] -
@@ -332,11 +328,10 @@ class Map:
                  2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] +
                  2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
-        pressure = (2 * pres_field[tstep-1, x-1, y] +
-                    2 * pres_field[tstep-1, x, y-1] -
-                    8 * pres_field[tstep-1, x, y] +
-                    2 * pres_field[tstep-1, x+1, y] +
-                    2 * pres_field[tstep-1, x, y+1])
+        pressure = (-pres_field[tstep-1, x-1, y] -
+                    pres_field[tstep-1, x, y-1] +
+                    pres_field[tstep-1, x+1, y] +
+                    pres_field[tstep-1, x, y+1])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
             + pressure * beta

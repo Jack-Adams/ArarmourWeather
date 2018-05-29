@@ -70,40 +70,83 @@ class TestMapSetup(test.TestCase):
 
 class TestFiniteDifferenceSchemes(test.TestCase):
 
-    def test_roi_magic_stencil(self):
+    #def test_roi_stencil(self):
+
+
+    #def test_inner_buffer_stencil(self):
+
+
+    #def test_outer_horz_stencil(self):
+
+
+    def test_outer_vert_stencil(self):
+        # First, set up the map and the initial conditions for the tests.
         test_map = MS.Map()
-        magic_field = 100 * np.ones([1, 9, 9])
-        magic_field = np.append(magic_field, np.zeros([1, 9, 9]), axis=0)
-        dif_field = 0.2 * np.ones([9, 9])
+        test_map.Light = 100 * np.ones([1, 9, 9])
+        test_map.Light = np.append(test_map.Light, np.zeros([1, 9, 9]), axis=0)
+        test_map.DifLight = 0.05 * np.ones([9, 9])
+        test_map.LDPressure = 200 * np.ones([1, 9, 9])
+        test_map.LDPressure = np.append(test_map.LDPressure,
+                                        np.zeros([1, 9, 9]), axis=0)
         time_step = 1
-        y = 4
-        x = 3
-        magic_field[time_step - 1, 4, 4] = 150
-        value = test_map.roi_magic_stencil(magic_field, dif_field, time_step,
-                                           x, y)
-        self.assertEqual(np.round(value, 1), 30.0)
+        test_map.Light[time_step - 1, 4, 4] = 150
 
-        x = 4
-        value = test_map.roi_magic_stencil(magic_field, dif_field, time_step,
-                                           x, y)
-        self.assertEqual(np.round(value, 1), -108.9)
+        # Next, calculate the values for the stencil.
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 4, 4)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 3, 4)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 5, 4)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 4, 2)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 4, 3)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 4, 5)
+        test_map.outer_vert_stencil(test_map.Light, test_map.DifLight,
+                                    test_map.LDPressure, time_step, 4, 6)
 
-    def test_roi_pres_stencil(self):
+        # Lastly test the outputs of the stencil.
+        self.assertAlmostEqual(test_map.Light[1, 4, 4], 127.5)
+        self.assertAlmostEqual(test_map.Light[1, 3, 4], 105)
+        self.assertAlmostEqual(test_map.Light[1, 5, 4], 105)
+        self.assertAlmostEqual(test_map.Light[1, 4, 2], 99.583)
+        self.assertAlmostEqual(test_map.Light[1, 4, 3], 106.667)
+        self.assertAlmostEqual(test_map.Light[1, 4, 5], 106.667)
+        self.assertAlmostEqual(test_map.Light[1, 4, 6], 99.583)
+
+    def test_outer_corner_stencil(self):
+        # First, set up the map and the initial conditions for the tests.
         test_map = MS.Map()
-        pres_field = 100 * np.ones([1, 9, 9])
-        pres_field = np.append(pres_field, np.zeros([1, 9, 9]), axis=0)
+        test_map.Light = 100 * np.ones([1, 9, 9])
+        test_map.Light = np.append(test_map.Light, np.zeros([1, 9, 9]), axis=0)
+        test_map.DifLight = 0.05 * np.ones([9, 9])
+        test_map.LDPressure = 200 * np.ones([1, 9, 9])
+        test_map.LDPressure = np.append(test_map.LDPressure,
+                                        np.zeros([1, 9, 9]), axis=0)
         time_step = 1
-        y = 4
-        x = 3
-        pres_field[time_step - 1, 4, 4] = 150
-        value = test_map.roi_pres_stencil(pres_field, time_step,
-                                              x, y)
-        self.assertEqual(np.round(value, 1), 30.0)
+        test_map.Light[time_step - 1, 4, 4] = 150
 
-        x = 4
-        value = test_map.roi_pres_stencil(pres_field, time_step,
-                                              x, y)
-        self.assertEqual(np.round(value, 1), -108.9)
+        # Next, calculate the values for the stencil.
+        test_map.outer_corner_stencil(test_map.Light, test_map.DifLight,
+                                      test_map.LDPressure, time_step, 4, 4)
+        test_map.outer_corner_stencil(test_map.Light, test_map.DifLight,
+                                      test_map.LDPressure, time_step, 3, 4)
+        test_map.outer_corner_stencil(test_map.Light, test_map.DifLight,
+                                      test_map.LDPressure, time_step, 5, 4)
+        test_map.outer_corner_stencil(test_map.Light, test_map.DifLight,
+                                      test_map.LDPressure, time_step, 4, 3)
+        test_map.outer_corner_stencil(test_map.Light, test_map.DifLight,
+                                      test_map.LDPressure, time_step, 4, 5)
+
+        # Lastly test the outputs of the stencil.
+        self.assertEqual(test_map.Light[1, 4, 4], 130)
+        self.assertEqual(test_map.Light[1, 3, 4], 105)
+        self.assertEqual(test_map.Light[1, 5, 4], 105)
+        self.assertEqual(test_map.Light[1, 4, 3], 105)
+        self.assertEqual(test_map.Light[1, 4, 5], 105)
+
 
 if __name__ == '__main__':
     test.main()
