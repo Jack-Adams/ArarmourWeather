@@ -1,6 +1,6 @@
 # Author: Jack Adams
 # Date Started: 18/05/17
-# Last Updated: 18/05/27
+# Last Updated: 18/06/1
 
 # This file contains the definitions of the map and point structures. It also
 # contains all of the methods which act on those structures.
@@ -115,21 +115,21 @@ class Map:
 
         w = map_width + 4
 
-        for i in range(1, w-1):
-            for j in range(1, w-1):
-                if ((i == 1 & j == 1) | (i == 1 & j == w-1) |
-                     (i == w-1 & j == 1) | (i == w-1 & j == w-1)):
+        for i in range(1, w+1):
+            for j in range(1, w+1):
+                if ((i == 1 and j == 1) or (i == 1 and j == w) or
+                        (i == w and j == 1) or (i == w and j == w)):
                     self.outer_corner_stencil(magic_field, dif_field,
                                               pres_field, tstep, i, j)
-                elif i == 1 | i == w-1:
+                elif i == 1 or i == w:
                     self.outer_vert_stencil(magic_field, dif_field,
                                             pres_field, tstep, i, j)
-                elif j == 1 | j == w-1:
+                elif j == 1 or j == w:
                     self.outer_horz_stencil(magic_field, dif_field,
                                             pres_field, tstep, i, j)
-                elif i == 2 | j == 2 | i == w-2 | j == w-2:
-                    self.inner_buffer_stencil(magic_field, dif_field,
-                                              pres_field, tstep, i, j)
+                elif i == 2 or j == 2 or i == w-1 or j == w-1:
+                    self.inner_stencil(magic_field, dif_field,
+                                       pres_field, tstep, i, j)
                 else:
                     self.roi_stencil(magic_field, dif_field, pres_field,
                                      tstep, i, j)
@@ -151,7 +151,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 1
+        beta = 0.1
 
         magic = (1/45 * dif_field[x-3, y] * magic_field[tstep-1, x-3, y] -
                  3/10 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
@@ -183,7 +183,7 @@ class Map:
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
 
-    def inner_buffer_stencil(self, magic_field, dif_field, pres_field, tstep,
+    def inner_stencil(self, magic_field, dif_field, pres_field, tstep,
                              x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
@@ -201,7 +201,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 1
+        beta = 0.1
 
         magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
                  8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
