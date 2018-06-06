@@ -6,7 +6,7 @@
 # contains all of the methods which act on those structures.
 
 import numpy as np
-import scipy as sp
+from scipy.stats import skewnorm
 import h5py as h5
 
 
@@ -95,7 +95,7 @@ class Map:
             self.Light = np.append(self.Light, np.zeros([1, sizes[1], sizes[2]]),
                                    axis=0)
             self.Dark = np.append(self.Dark, np.zeros([1, sizes[1], sizes[2]]),
-                                   axis=0)
+                                  axis=0)
             self.LDPressure = np.append(self.LDPressure, np.zeros([1, sizes[1],
                                                                    sizes[2]]),
                                         axis=0)
@@ -134,6 +134,27 @@ class Map:
                     self.roi_stencil(magic_field, dif_field, pres_field,
                                      tstep, i, j)
 
+    def update_pressure(self, magic_field1, magic_field2, pres_field,
+                        tstep, map_width):
+        """
+        Takes two paired Magic field and finds the Magical pressure at each
+        point across the map.
+
+        :param magic_field1: The first Magic field.
+        :param magic_field2: The second Magic field.
+        :param pres_field: The pressure field associated with the given Magic
+                           fields.
+        :param tstep: The current time.
+        :param map_width: The number of points across the region of interest.
+        """
+
+        w = map_width + 6
+
+        for i in range(w):
+            for j in range(w):
+                pres_field[tstep, i, j] = (magic_field1[tstep, i, j] +
+                                          magic_field2[tstep, i, j])
+
     def roi_stencil(self, magic_field, dif_field, pres_field, tstep, x, y):
         """
         Calculates the change in Magic due to diffusion of Magic into or from
@@ -151,7 +172,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 0.1
+        beta = 0.02
 
         magic = (1/45 * dif_field[x-3, y] * magic_field[tstep-1, x-3, y] -
                  3/10 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
@@ -167,18 +188,19 @@ class Map:
                  3/10 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2] +
                  1/45 * dif_field[x, y+3] * magic_field[tstep-1, x, y+3])
 
-        pressure = (-1/30 * pres_field[tstep-1, x-3, y] +
-                    3/10 * pres_field[tstep-1, x-2, y] -
-                    3/2 * pres_field[tstep-1, x-1, y] +
-                    3/2 * pres_field[tstep-1, x+1, y] -
+        pressure = (1/45 * pres_field[tstep-1, x-3, y] -
+                    3/10 * pres_field[tstep-1, x-2, y] +
+                    3 * pres_field[tstep-1, x-1, y] -
+                    98/9 * pres_field[tstep-1, x, y] +
+                    3 * pres_field[tstep-1, x+1, y] -
                     3/10 * pres_field[tstep-1, x+2, y] +
-                    1/30 * pres_field[tstep-1, x+3, y] -
-                    1/30 * pres_field[tstep-1, x, y-3] +
-                    3/10 * pres_field[tstep-1, x, y-2] -
-                    3/2 * pres_field[tstep-1, x, y-1] +
-                    3/2 * pres_field[tstep-1, x, y+1] -
+                    1/45 * pres_field[tstep-1, x+3, y] +
+                    1/45 * pres_field[tstep-1, x, y-3] -
+                    3/10 * pres_field[tstep-1, x, y-2] +
+                    3 * pres_field[tstep-1, x, y-1] +
+                    3 * pres_field[tstep-1, x, y+1] -
                     3/10 * pres_field[tstep-1, x, y+2] +
-                    1/30 * pres_field[tstep-1, x, y+3])
+                    1/45 * pres_field[tstep-1, x, y+3])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
@@ -201,7 +223,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 0.1
+        beta = 0.02
 
         magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
                  8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
@@ -213,13 +235,14 @@ class Map:
                  8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
                  1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-        pressure = (1/6 * pres_field[tstep-1, x-2, y] -
-                    4/3 * pres_field[tstep-1, x-1, y] +
-                    4/3 * pres_field[tstep-1, x+1, y] -
-                    1/6 * pres_field[tstep-1, x+2, y] +
-                    1/6 * pres_field[tstep-1, x, y-2] -
-                    4/3 * pres_field[tstep-1, x, y-1] +
-                    4/3 * pres_field[tstep-1, x, y+1] -
+        pressure = (-1/6 * pres_field[tstep-1, x-2, y] +
+                    8/3 * pres_field[tstep-1, x-1, y] -
+                    10 * pres_field[tstep-1, x, y] +
+                    8/3 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x+2, y] -
+                    1/6 * pres_field[tstep-1, x, y-2] +
+                    8/3 * pres_field[tstep-1, x, y-1] +
+                    8/3 * pres_field[tstep-1, x, y+1] -
                     1/6 * pres_field[tstep-1, x, y+2])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
@@ -244,7 +267,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 0.1
+        beta = 0.02
 
         magic = (-1/6 * dif_field[x-2, y] * magic_field[tstep-1, x-2, y] +
                  8/3 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
@@ -254,12 +277,13 @@ class Map:
                  2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] +
                  2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
-        pressure = (1/6 * pres_field[tstep-1, x-2, y] -
-                    4/3 * pres_field[tstep-1, x-1, y] +
-                    4/3 * pres_field[tstep-1, x+1, y] -
-                    1/6 * pres_field[tstep-1, x+2, y] -
-                    pres_field[tstep-1, x, y-1] +
-                    pres_field[tstep-1, x, y+1])
+        pressure = (-1/6 * pres_field[tstep-1, x-2, y] +
+                    8/3 * pres_field[tstep-1, x-1, y] -
+                    9 * pres_field[tstep-1, x, y] +
+                    8/3 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x+2, y] +
+                    2 * pres_field[tstep-1, x, y-1] +
+                    2 * pres_field[tstep-1, x, y+1])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic \
             + pressure * beta
@@ -283,7 +307,7 @@ class Map:
                  point of interest due to diffusion of this type of Magic.
         """
 
-        beta = 0.1
+        beta = 0.02
 
         magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] -
                  9 * dif_field[x, y] * magic_field[tstep-1, x, y] +
@@ -293,11 +317,12 @@ class Map:
                  8/3 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1] -
                  1/6 * dif_field[x, y+2] * magic_field[tstep-1, x, y+2])
 
-        pressure = (-pres_field[tstep-1, x-1, y] +
-                    pres_field[tstep-1, x+1, y] +
-                    1/6 * pres_field[tstep-1, x, y-2] -
-                    4/3 * pres_field[tstep-1, x, y-1] +
-                    4/3 * pres_field[tstep-1, x, y+1] -
+        pressure = (2 * pres_field[tstep-1, x-1, y] -
+                    9 * pres_field[tstep-1, x, y] +
+                    2 * pres_field[tstep-1, x+1, y] -
+                    1/6 * pres_field[tstep-1, x, y-2] +
+                    8/3 * pres_field[tstep-1, x, y-1] +
+                    8/3 * pres_field[tstep-1, x, y+1] -
                     1/6 * pres_field[tstep-1, x, y+2])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
@@ -320,7 +345,7 @@ class Map:
         :param y: The y-position of the point of interest.
         """
 
-        beta = 0.1
+        beta = 0.02
 
         magic = (2 * dif_field[x-1, y] * magic_field[tstep-1, x-1, y] +
                  2 * dif_field[x, y-1] * magic_field[tstep-1, x, y-1] -
@@ -328,12 +353,69 @@ class Map:
                  2 * dif_field[x+1, y] * magic_field[tstep-1, x+1, y] +
                  2 * dif_field[x, y+1] * magic_field[tstep-1, x, y+1])
 
-        pressure = (-pres_field[tstep-1, x-1, y] -
-                    pres_field[tstep-1, x, y-1] +
-                    pres_field[tstep-1, x+1, y] +
-                    pres_field[tstep-1, x, y+1])
+        pressure = (2 * pres_field[tstep-1, x-1, y] +
+                    2 * pres_field[tstep-1, x, y-1] -
+                    8 * pres_field[tstep-1, x, y] +
+                    2 * pres_field[tstep-1, x+1, y] +
+                    2 * pres_field[tstep-1, x, y+1])
 
         magic_field[tstep, x, y] = magic_field[tstep - 1, x, y] + magic\
             + pressure * beta
 
-    #def initialise_BCs(self):
+    def generate_BCs(self, magic_field, tstep, map_width):
+        """
+        For the entire outer edge of the map, this method will generate the
+        boundary conditions for the current time step which are required to
+        find the values of the Magic field in the next time step. This is done
+        by using a finite difference scheme to find the first order change in
+        the Magic field values which have been calculated and then predict what
+        the Magic field value around the outside should be.
+
+        :param magic_field: The Magic field which needs its BCs calculated.
+        :param tstep: The current time step.
+        :param map_width: The number of points across the region of interest.
+        """
+
+        w = map_width + 5
+
+        for i in range(1, w):
+            magic_field[tstep, i, 0] = skewnorm.rvs(0, loc=magic_field[
+                                                         tstep-1, i, 0],
+                                                     scale=10)
+
+            magic_field[tstep, i, w] = skewnorm.rvs((50/(100.1-magic_field[
+                                            tstep-1, i, w])),
+                                                     loc=magic_field[
+                                                         tstep-1, i, w],
+                                                     scale=15)
+
+            magic_field[tstep, 0, i] = skewnorm.rvs((50/(100.1-magic_field[
+                                            tstep-1, 0, i])),
+                                                     loc=magic_field[
+                                                         tstep-1, 0, i],
+                                                     scale=15)
+
+            magic_field[tstep, w, i] = skewnorm.rvs((50/(100.1-magic_field[
+                                            tstep-1, 0, i])),
+                                                     loc=magic_field[
+                                                         tstep-1, 0, i],
+                                                     scale=15)
+
+    def LD_forcing_functions(self, light_field, dark_field, tstep, map_width):
+        """
+        Enforces the generation and consumption of Magic which drives the
+        systems.
+
+        :param light_field: The Magic Field corresponding to Light Magic.
+        :param dark_field: The Magic Field corresponding to Dark Magic.
+        :param tstep: The current time step.
+        :param map_width: The number of points in the region of interest.
+        """
+
+        w = map_width + 5
+
+        light_field[tstep, 11, 7] = (light_field[tstep, 11, 7] +
+                                     skewnorm.rvs(4, loc=200, scale=80))
+        consumption = light_field[tstep, 17, 10] * 1/5
+        light_field[tstep, 11, 15] = light_field[tstep, 11, 15] - consumption
+        dark_field[tstep, 11, 15] = dark_field[tstep, 11, 15] + consumption
